@@ -17,7 +17,7 @@ import re
  (71)
 '''
 
-tags = set()
+tag_ctr = {} 
 
 with open("yelp_boston.csv", mode="r") as f:
     csvfile = csv.reader(f)
@@ -25,7 +25,15 @@ with open("yelp_boston.csv", mode="r") as f:
         formatted = re.sub(r"[\[\],.;@#?'!]+", '', line[3])
         formatted_tags = formatted.split('" ')[1::2]
         for tag in formatted_tags:
-            tags.add(tag.strip('"'))
+            tag = tag.strip('"')
+            # trying to get sense check
+            if tag in tag_ctr.keys():
+                tag_ctr[tag] += 1
+            else:
+                tag_ctr[tag] = 1
 
-print(tags)
-print(len(tags))
+tag_ctr_sorted = dict(sorted(tag_ctr.items(), key=lambda item : item[1], reverse=True))
+
+print(len(tag_ctr_sorted.keys()))
+
+print(tag_ctr_sorted)
