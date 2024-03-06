@@ -28,7 +28,15 @@
                 padding-top: 5vh;
             }
 
+            text {
+                font-family: "Helvetica";
+            }
 
+            .container {
+                display: flex;
+                align-items: flex-start;
+                padding: 20px;
+            }
             
         </style>
     </head>
@@ -46,10 +54,10 @@
         <div id="neighborhood-select">
             <div class="container">
                 <!-- bubble chart force graph w/ neighborhoods? -->
-                <svg id="nbhd-bubbles"></svg>
+                <svg id="nbhd-bubbles" height="700" width="700" style="border: 1px solid blue;"></svg>
 
                 <!-- minimap of boston -->
-                <svg id="boston-minimap"></svg>
+                <svg id="boston-minimap" height="400" width = "400" style="border: 1px solid red;"></svg>
             </div>
         </div>
 
@@ -72,6 +80,143 @@
     <script>
 
         const requestData = async function() {
+            const data = await d3.csv("data/yelp_boston.csv", d3.autoType);
+            console.log(data);
+
+            //Temporary data for the neighborhoods
+            var neighborhoods = {};
+            data.forEach( d => {
+                var neighborhood = d['neighborhood'];
+                if (neighborhood !== null) {
+                    neighborhoods[neighborhood] = (neighborhoods[neighborhood] || 0) + 1;
+                }
+                
+            }) 
+            var counts = [];
+            Object.entries(neighborhoods).forEach(([key, value]) => {
+                counts.push({'neighborhood': key, 'count': value});
+            });
+
+            //Creating bubble chart
+            const svg_nbhd_bubbles = d3.select("#nbhd-bubbles");
+            const width = svg_nbhd_bubbles.attr("width");
+            const height = svg_nbhd_bubbles.attr("height");
+
+            const margin = { top: 5, bottom: 5, right: 5, left: 5 };
+            const bubbleWidth = width - margin.left - margin.right;
+            const bubbleHeight = height - margin.top - margin.bottom;
+
+            const colorScale = d3.scaleOrdinal().domain(Object.keys(neighborhoods)).range(d3.schemeSet3);
+
+            createBubbleChart(svg_nbhd_bubbles, counts, "neighborhood", "count", colorScale);
+            
+
+            //Create map of Boston
+            const mapData = await d3.json("data/boston_nbhds.json", d3.autoType);
+
+            const svg_map = d3.select("#boston-minimap");
+            const svg_map_W = svg_map.attr("width");
+            const svg_map_H = svg_map.attr("height");
+            let mapWidth = svg_map_W - margin.left - margin.right;
+            let mapHeight = svg_map_H - margin.top - margin.bottom;
+            let map = svg_map.append("g")
+                            .attr("transform", "translate("+margin.left+","+margin.top+")");
+
+
+            let projection = d3.geoMercator()
+                                .fitSize([mapWidth, mapHeight], mapData); 
+            let path = d3.geoPath().projection(projection);
+
+
+            //AHMED HELP ME -- SOMETHING IS WRONG WITH THE JSON DATA AND WON'T WORK
+
+            // map.selectAll("path.neighborhood").data(mapData.features) 
+            //         .join("path")
+            //         .attr("class", "neighborhood")
+            //         .attr("d", path)
+            //         .attr("stroke", "white") 
+            //         .attr("stroke-width", 0.5)
+            //         .attr("fill", "lightgray");
+
+            function createBubbleChart(svg, data, name, value, colorScale) {
+                const pack = d3.pack()
+                            .size([bubbleWidth, bubbleHeight])
+                            .padding(3);
+
+                const hierarchy = d3.hierarchy({children: data})
+                                .sum(d => d[value]);
+
+                const root = pack(hierarchy);
+
+                const bubbles = svg.append("g").selectAll()
+                                                .data(root.leaves())
+                                                .join("g")
+                                                .attr("transform", d => `translate(${d.x},${d.y})`);
+                
+                bubbles.append("circle")
+                        .attr("r", d => d.r)
+                        .attr("fill", d => colorScale(d.data[name]))
+                        .on('mouseover', mouseEntersState)
+                        .on('mouseout', mouseLeavesState);
+
+                //issue with hover over the words
+                bubbles.append("text")
+                        .attr("dy", "-0.3em")
+                        .style("text-anchor", "middle")
+                        .style("font-weight", 600)
+                        .style("font-size", function(d) {
+                            if (d.r < 30) { return 8; } //could probably dynamically program this to calculate font size
+                            return 15;                  
+                        })
+                        .text(d => d.data[name])
+                        //.call(wrap, 30); //how do i call this on only the small bubbles?
+
+                bubbles.append("text")
+                        .attr("dy", "1.2em")
+                        .style("text-anchor", "middle")
+                        .style("font-size", function(d) {
+                            if (d.r < 30) { return 8; }
+                            return 15;
+                        })
+                        .text(d => d.data[value]);
+            }
+
+            function mouseEntersState() {
+                var bubble = d3.select(this);
+                bubble.attr("opacity", 0.6);
+            }
+
+            function mouseLeavesState() {
+                var bubble = d3.select(this);
+                bubble.attr("opacity", 1);
+            }
+
+            //function courtesy of Mike Bostock: https://gist.github.com/mbostock/7555321
+            function wrap(text, width) {
+                text.each(function() {
+                    var text = d3.select(this),
+                        words = text.text().split(/\s+/).reverse(),
+                        word,
+                        line = [],
+                        lineNumber = 0,
+                        lineHeight = 0.7, // ems
+                        y = text.attr("y"),
+                        dy = parseFloat(text.attr("dy")),
+                        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+                    while (word = words.pop()) {
+                    line.push(word);
+                    tspan.text(line.join(" "));
+                    if (tspan.node().getComputedTextLength() > width) {
+                        line.pop();
+                        tspan.text(line.join(" "));
+                        line = [word];
+                        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                    }
+                    }
+            });
+}
+
+
 
         }
 
