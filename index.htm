@@ -88,33 +88,25 @@
             data.forEach( d => {
                 var neighborhood = d['neighborhood'];
                 var cuisines = JSON.parse(d.categories_json);
-                //console.log(cuisines);
         
                 if (neighborhood !== null) {
                     if (neighborhoods.hasOwnProperty(neighborhood)) {
                         neighborhoods[neighborhood]["count"] = neighborhoods[neighborhood]["count"] + 1;
-                        var inNeighborhood = false;
                         
-                        // NEEDS MORE WORK TO COUNT THE NUMBER OF RESTAURANTS IN EACH NEIGHBORHOOD
-                        console.log(cuisines);
+                        // COUNT THE NUMBER OF RESTAURANTS IN EACH NEIGHBORHOOD
                         cuisines.forEach( d => {
                             var name = d[0];
                             if(neighborhoods[neighborhood]["cuisines"].hasOwnProperty(name)) {
                                 neighborhoods[neighborhood]["cuisines"][name] = neighborhoods[neighborhood]["cuisines"][name] + 1;
                             }
                             else { neighborhoods[neighborhood]["cuisines"][name] = 1; }
-
-
                         })
-
                     }
                     else {
                         var cuisine_map = [];
                         cuisines.forEach( d => {
-
                             var name = d[0];
-                            cuisine_map[name] = 1;
-                            
+                            cuisine_map[name] = 1;                          
                         })
                         neighborhoods[neighborhood] = {
                             'count': 1,
@@ -122,12 +114,10 @@
                         };                       
                 }
             }}); 
-            console.log(neighborhoods);
             var counts = [];
             Object.entries(neighborhoods).forEach(([key, value]) => {
                 counts.push({'neighborhood': key, 'count': value.count, "cuisines": value.cuisines});
             });
-            console.log(counts);
 
             //Creating bubble chart
             const svg_nbhd_bubbles = d3.select("#nbhd-bubbles");
@@ -143,9 +133,12 @@
 
             createBubbleChart(svg_nbhd_bubbles, counts, "neighborhood", "count", nbhd_colorScale);
             
-
             //Create map of Boston
-            const mapData = await d3.json("data/boston_nbhds.json", d3.autoType);
+
+            //Let's get rid of the initial map data? but the second dataset also doesn't have all the neighborhoods
+            //const mapData = await d3.json("data/boston_nbhds.json", d3.autoType);
+            const mapData2 = await d3.json("data/BPDA_Neighborhood_Boundaries.geojson");
+            console.log(mapData2);
 
             const svg_map = d3.select("#boston-minimap");
             const svg_map_W = svg_map.attr("width");
@@ -157,19 +150,18 @@
 
 
             let projection = d3.geoMercator()
-                                .fitSize([mapWidth, mapHeight], mapData); 
+                                .fitSize([mapWidth, mapHeight], mapData2); 
             let path = d3.geoPath().projection(projection);
-
 
             //AHMED HELP ME -- SOMETHING IS WRONG WITH THE JSON DATA AND WON'T WORK
 
-            // map.selectAll("path.neighborhood").data(mapData.features) 
-            //         .join("path")
-            //         .attr("class", "neighborhood")
-            //         .attr("d", path)
-            //         .attr("stroke", "white") 
-            //         .attr("stroke-width", 0.5)
-            //         .attr("fill", "lightgray");
+            map.selectAll("path.neighborhood").data(mapData2.features) 
+                    .join("path")
+                    .attr("class", "neighborhood")
+                    .attr("d", path)
+                    .attr("stroke", "white") 
+                    .attr("stroke-width", 0.5)
+                    .attr("fill", "lightgray");
 
             function createBubbleChart(svg, data, name, value, colorScale) {
                 const pack = d3.pack()
