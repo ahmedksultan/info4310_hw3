@@ -80,8 +80,8 @@
     <script>
 
         const requestData = async function() {
+
             const data = await d3.csv("data/yelp_boston.csv", d3.autoType);
-            console.log(data);
 
             //Temporary data for the neighborhoods
             var neighborhoods = {};
@@ -267,11 +267,51 @@
                     }
                     }
             });
-}
-
-
 
         }
+
+        let neighborhood_counts = {}
+
+
+        const data3 = await d3.json("data/bos_rest_formatted.json");
+
+        data3.forEach( d => {
+            d["loc_json"] = JSON.parse(d["loc_json"]);
+
+            longitude=  d["loc_json"]["coordinate"]["longitude"];
+            latitude = d["loc_json"]["coordinate"]["latitude"];
+
+            var nbhd = nbhdChecker(longitude, latitude);
+
+            d["neighborhood"] = nbhd;
+
+            if (Object.keys(neighborhood_counts).includes(nbhd)) {
+                if (nbhd == "CANNOTBEFOUND") {
+                    console.log(d["name"] + " " + d["loc_json"]["display_address"][1]);
+                }
+                neighborhood_counts[nbhd] = neighborhood_counts[nbhd] + 1;
+            } else {
+                neighborhood_counts[nbhd] = 1;
+            }
+        });
+
+        function nbhdChecker(lon, lat) {
+            output = "CANNOTBEFOUND";
+
+            mapData2["features"].forEach(n => {
+                if (d3.geoContains(n, [lon, lat])) {
+                    output = n["properties"]["name"];
+                }
+            });
+
+            return output;
+        }
+
+        console.log(data3);
+
+        console.log(neighborhood_counts);
+    }
+
 
         requestData();
 
