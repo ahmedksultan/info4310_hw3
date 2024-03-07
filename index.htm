@@ -64,7 +64,7 @@
         <div id="cuisine-select">
             <div class="container">
                 <!-- bubble chart force graph w/ cuisines? -->
-                <svg id="cuisine-bubbles"></svg>
+                <svg id="cuisine-bubbles" height="700" width="700" style="border: 1px solid blue;"></svg>
 
                 <!-- minimap of neighborhood -->
                 <svg id="nbhd-minimap"></svg>
@@ -87,18 +87,51 @@
             var neighborhoods = {};
             data.forEach( d => {
                 var neighborhood = d['neighborhood'];
+                var cuisines = JSON.parse(d.categories_json);
+                //console.log(cuisines);
+        
                 if (neighborhood !== null) {
-                    neighborhoods[neighborhood] = (neighborhoods[neighborhood] || 0) + 1;
+                    if (neighborhoods.hasOwnProperty(neighborhood)) {
+                        neighborhoods[neighborhood]["count"] = neighborhoods[neighborhood]["count"] + 1;
+                        var inNeighborhood = false;
+                        
+                        // NEEDS MORE WORK TO COUNT THE NUMBER OF RESTAURANTS IN EACH NEIGHBORHOOD
+                        console.log(cuisines);
+                        cuisines.forEach( d => {
+                            var name = d[0];
+                            if(neighborhoods[neighborhood]["cuisines"].hasOwnProperty(name)) {
+                                neighborhoods[neighborhood]["cuisines"][name] = neighborhoods[neighborhood]["cuisines"][name] + 1;
+                            }
+                            else { neighborhoods[neighborhood]["cuisines"][name] = 1; }
+
+
+                        })
+
+                    }
+                    else {
+                        var cuisine_map = [];
+                        cuisines.forEach( d => {
+
+                            var name = d[0];
+                            cuisine_map[name] = 1;
+                            
+                        })
+                        neighborhoods[neighborhood] = {
+                            'count': 1,
+                            'cuisines': cuisine_map
+                        };                       
                 }
-                
-            }) 
+            }}); 
+            console.log(neighborhoods);
             var counts = [];
             Object.entries(neighborhoods).forEach(([key, value]) => {
-                counts.push({'neighborhood': key, 'count': value});
+                counts.push({'neighborhood': key, 'count': value.count, "cuisines": value.cuisines});
             });
+            console.log(counts);
 
             //Creating bubble chart
             const svg_nbhd_bubbles = d3.select("#nbhd-bubbles");
+            const svg_cuisine_bubbles = d3.select("#cuisine-bubbles");
             const width = svg_nbhd_bubbles.attr("width");
             const height = svg_nbhd_bubbles.attr("height");
 
@@ -106,9 +139,9 @@
             const bubbleWidth = width - margin.left - margin.right;
             const bubbleHeight = height - margin.top - margin.bottom;
 
-            const colorScale = d3.scaleOrdinal().domain(Object.keys(neighborhoods)).range(d3.schemeSet3);
+            const nbhd_colorScale = d3.scaleOrdinal().domain(Object.keys(neighborhoods)).range(d3.schemeSet3);
 
-            createBubbleChart(svg_nbhd_bubbles, counts, "neighborhood", "count", colorScale);
+            createBubbleChart(svg_nbhd_bubbles, counts, "neighborhood", "count", nbhd_colorScale);
             
 
             //Create map of Boston
@@ -154,10 +187,12 @@
                                                 .attr("transform", d => `translate(${d.x},${d.y})`);
                 
                 bubbles.append("circle")
+                        .attr("class", name)
                         .attr("r", d => d.r)
                         .attr("fill", d => colorScale(d.data[name]))
                         .on('mouseover', mouseEntersState)
-                        .on('mouseout', mouseLeavesState);
+                        .on('mouseout', mouseLeavesState)
+                        .on("click", mouseClickEvent);
 
                 //issue with hover over the words
                 bubbles.append("text")
@@ -189,6 +224,32 @@
             function mouseLeavesState() {
                 var bubble = d3.select(this);
                 bubble.attr("opacity", 1);
+            }
+
+            function mouseClickEvent() {
+                
+                const selectedBubble = d3.select(this);
+                const nbhd_cuisines = selectedBubble._groups[0][0].__data__.data.cuisines
+
+                //If the bubble clicked was in the neighborhood bubble chart
+                if (d3.select(this).attr("class") === "neighborhood") {
+                    svg_cuisine_bubbles.html(""); //clears the bubble chart
+                    
+                    //converting data into bubble chart flattened data
+                    var cuisineCounts = [];
+                    Object.entries(nbhd_cuisines).forEach(([key, value]) => {
+                        cuisineCounts.push({'cuisine': key, 'restaurants': value});
+                    });
+                    
+                    const cuisine_colorScale = d3.scaleOrdinal().domain(Object.keys(nbhd_cuisines)).range(d3.schemeSet3);
+
+                    //call to create new bubble chart
+                    createBubbleChart(svg_cuisine_bubbles, cuisineCounts, "cuisine", "restaurants", cuisine_colorScale);
+
+                    
+
+
+                }
             }
 
             //function courtesy of Mike Bostock: https://gist.github.com/mbostock/7555321
