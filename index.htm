@@ -153,11 +153,10 @@
                                 .fitSize([mapWidth, mapHeight], mapData2); 
             let path = d3.geoPath().projection(projection);
 
-            //AHMED HELP ME -- SOMETHING IS WRONG WITH THE JSON DATA AND WON'T WORK
-
             map.selectAll("path.neighborhood").data(mapData2.features) 
                     .join("path")
                     .attr("class", "neighborhood")
+                    .attr("id", d => d.properties.name.replace(/\s+/g, ''))
                     .attr("d", path)
                     .attr("stroke", "white") 
                     .attr("stroke-width", 0.5)
@@ -208,14 +207,45 @@
                         .text(d => d.data[value]);
             }
 
+            //will eventually display list of restaurants 
+            function createRestaurantList() {
+
+            }
+
             function mouseEntersState() {
                 var bubble = d3.select(this);
                 bubble.attr("opacity", 0.6);
+
+                if (bubble.attr("class") === "neighborhood") {
+                    var selected_nbhd = bubble._groups[0][0].__data__.data.neighborhood;
+                    mapData2["features"].forEach(n => {
+                        if (n.properties.name === selected_nbhd) {
+                            selected_nbhd = selected_nbhd.replace(/\s+/g, '')
+                            map.selectAll(`path#${selected_nbhd}`)
+                                .attr("d", path)
+                                .attr("fill", "#80b1d3");
+                        }
+                    });
+
+                }
             }
 
             function mouseLeavesState() {
                 var bubble = d3.select(this);
                 bubble.attr("opacity", 1);
+
+                if (bubble.attr("class") === "neighborhood") {
+                    var selected_nbhd = bubble._groups[0][0].__data__.data.neighborhood;
+                    mapData2["features"].forEach(n => {
+                        if (n.properties.name === selected_nbhd) {
+                            selected_nbhd = selected_nbhd.replace(/\s+/g, '')
+                            map.selectAll(`path#${selected_nbhd}`)
+                                .attr("d", path)
+                                .attr("fill", "lightgray");
+                        }
+                    });
+
+                }
             }
 
             function mouseClickEvent() {
@@ -224,7 +254,7 @@
                 const nbhd_cuisines = selectedBubble._groups[0][0].__data__.data.cuisines
 
                 //If the bubble clicked was in the neighborhood bubble chart
-                if (d3.select(this).attr("class") === "neighborhood") {
+                if (selectedBubble.attr("class") === "neighborhood") {
                     svg_cuisine_bubbles.html(""); //clears the bubble chart
                     
                     //converting data into bubble chart flattened data
@@ -237,10 +267,9 @@
 
                     //call to create new bubble chart
                     createBubbleChart(svg_cuisine_bubbles, cuisineCounts, "cuisine", "restaurants", cuisine_colorScale);
-
-                    
-
-
+                }
+                if (selectedBubble.attr("class") === "cuisines") {
+                    createRestaurantList();
                 }
             }
 
@@ -310,6 +339,7 @@
         console.log(data3);
 
         console.log(neighborhood_counts);
+        console.log(mapData2.features);
     }
 
 
