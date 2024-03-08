@@ -37,6 +37,24 @@
                 align-items: flex-start;
                 padding: 20px;
             }
+
+            .card {
+                text-align: center;
+                align-content: center;
+            }
+
+            .info-flex {
+                display: flex;
+                flex-direction: row;
+                margin-left: auto;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .info-flex > * {
+                padding-left: 1em;
+                padding-right: 1em;
+            }
             
         </style>
     </head>
@@ -75,6 +93,58 @@
             <!-- lowkey just a list/list-like implementation -->
             <!-- AKS : replace w/ div? ul? unsure -->
             <svg id="restaurant-list" height="700" width="700" style="border: 1px solid blue;"></svg>
+            
+            <!--
+                {
+                    "name": "Swish Shabu",
+                    "categories": [
+                        "japanese",
+                        "sushi",
+                        "hotpot"
+                    ],
+                    "neighborhood": "Fenway",
+                    "loc_json": {
+                        "city": "Boston",
+                        "display_address": [
+                        "84 86 Peterborough St",
+                        "Fenway",
+                        "Boston, MA 02215"
+                        ],
+                        "geo_accuracy": 8,
+                        "neighborhoods": [
+                        "Fenway"
+                        ],
+                        "postal_code": "02215",
+                        "country_code": "US",
+                        "address": [
+                        "84 86 Peterborough St"
+                        ],
+                        "coordinate": {
+                        "latitude": 42.3430901,
+                        "longitude": -71.0991135
+                        },
+                        "state_code": "MA"
+                    },
+                    "review_json": {
+                        "rating": "4",
+                        "count": "176",
+                        "snippet": "I came here for Valentine's Day dinner and I was not disappointed. I had only had hot pot one time before and I didn't really remember the previous..."
+                    },
+                    "url": "http://www.yelp.com/biz/swish-shabu-boston"
+                }
+            -->
+
+            <!--- 
+            <div class="card">
+                <h2>Restaurant title</h2>
+                <div class="info-flex">
+                    <p>★★★★☆ (60)</p> 
+                    <p>Hello</p>
+                    <p>Goodbye</p>
+                </div>
+                <span>"84 86 Peterborough St", "Fenway", "Boston, MA 02215"</span>
+            </div>
+           --->
 
         </div>
     </body>
@@ -230,7 +300,9 @@
 
             //will eventually display list of restaurants 
             function createRestaurantList() {
+                output = "";
 
+                document.getElementById('legend').innerHTML = "Your HTML here";
             }
 
             function mouseEntersState() {
@@ -272,25 +344,25 @@
             function mouseClickEvent() {
                 
                 const selectedBubble = d3.select(this);
-                // console.log(selectedBubble);
-
-                const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
-                const nbhd_contents = data.filter((d) => d["neighborhood"] == selected_nbhd );
-                console.log(nbhd_contents);
-
-                const content_counts = {}
-                nbhd_contents.forEach( (nc) => { 
-                    nc["categories"].forEach( (c) => {
-                        if (Object.keys(content_counts).includes(c)) {
-                            content_counts[c] += 1;
-                        } else {
-                            content_counts[c] = 1;
-                        }
-                    }) 
-                })
-                /// console.log(content_counts);
+                console.log(selectedBubble);
 
                 if (selectedBubble.attr("class") === "neighborhood") {
+                    const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
+                    const nbhd_contents = data.filter((d) => d["neighborhood"] == selected_nbhd );
+                    console.log(nbhd_contents);
+
+                    const content_counts = {}
+                    nbhd_contents.forEach( (nc) => { 
+                        nc["categories"].forEach( (c) => {
+                            if (Object.keys(content_counts).includes(c)) {
+                                content_counts[c] += 1;
+                            } else {
+                                content_counts[c] = 1;
+                            }
+                        }) 
+                    })
+                    /// console.log(content_counts);
+
                     svg_cuisine_bubbles.html(""); //clears the bubble chart
                     svg_nbhd_map.html(""); //clears the bubble chart
 
@@ -299,7 +371,7 @@
                     // Converting data into bubble chart flattened data
                     var cuisineCounts = [];
                     Object.entries(content_counts).forEach(([key, value]) => {
-                        cuisineCounts.push({'cuisine': key, 'restaurants': value});
+                        cuisineCounts.push({'cuisine': key, 'restaurants': value, 'neighborhood': selected_nbhd});
                     });
                     
                     const cuisine_colorScale = d3.scaleOrdinal().domain(Object.keys(content_counts)).range(d3.schemeSet3);
@@ -344,14 +416,58 @@
                         .attr("cy", d => 
                             nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [1] )
                         .attr("pointer-events", "none");
-
                 }
 
                 //TO BE IMPLEMENTED -- DISPLAY RESTAURANT LIST
 
                 if (selectedBubble.attr("class") === "cuisine") {
-                    document.getElementById("restaurant-recs").scrollIntoView({behavior: "smooth"});
+                    const selected_cuisine = selectedBubble._groups[0][0].__data__.data.cuisine;
+                    const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
+                    const cuisine_contents = data.filter((d) => (d["neighborhood"] == selected_nbhd) && (d["categories"].includes(selected_cuisine)));
+                    console.log(cuisine_contents);
 
+                    output = '';
+
+                    cuisine_contents.forEach( (cc) => {
+                        // name
+                        output += `<div class="card"><h2>${ cc.name }</h2><div class="info-flex">`;
+                        
+                        // stars TBD 
+                        starstring = "";
+                        if (cc.review_json.rating == "3") {
+                            starstring = "⭑⭑⭑⭒⭒";
+                        } else if (cc.review_json.rating == "3.5") {
+                            starstring = "⭑⭑⭑⯨⭒";
+                        } else if (cc.review_json.rating == "4") {
+                            starstring = "⭑⭑⭑⭑⭒";
+                        } else if (cc.review_json.rating == "4.5") {
+                            starstring = "⭑⭑⭑⭑⯨";
+                        } else {
+                            starstring = "⭑⭑⭑⭑⭑";
+                        }
+
+                        output += `<p class='ratings'> ${ starstring } (${ cc.review_json.count })`
+                        cc.categories.forEach( (cat) => { 
+                            output += `<p class="category">${ cat }</p>`;
+                        })
+                        output += "</div>";
+
+                        address = "<p class='address'>";
+                        cc.loc_json.display_address.forEach ( (da) => {
+                            address += da + ", ";
+                        })
+                        address = address.slice(0, -2) + "</p>"
+                        output += address
+
+                        output += `<p class="review-snippet"> ${ cc.review_json.snippet } </p>`;
+                        
+
+                        output += "</div><hr>"
+                    })
+
+                    document.getElementById("restaurant-recs").innerHTML = output;
+                    
+                    document.getElementById("restaurant-recs").scrollIntoView({behavior: "smooth"});
                 //     createRestaurantList();
                 }
             }
