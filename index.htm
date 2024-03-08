@@ -73,6 +73,8 @@
 
         <div id="restaurant-recs">
             <!-- lowkey just a list/list-like implementation -->
+            <svg id="restaurant-list" height="700" width="700" style="border: 1px solid blue;"></svg>
+
             
         </div>
     </body>
@@ -302,9 +304,11 @@
 
                 //TO BE IMPLEMENTED -- DISPLAY RESTAURANT LIST
 
-                // if (selectedBubble.attr("class") === "cuisines") {
+                if (selectedBubble.attr("class") === "cuisine") {
+                    document.getElementById("restaurant-recs").scrollIntoView({behavior: "smooth"});
+
                 //     createRestaurantList();
-                // }
+                }
             }
 
             //function courtesy of Mike Bostock: https://gist.github.com/mbostock/7555321
