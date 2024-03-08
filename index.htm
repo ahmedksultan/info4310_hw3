@@ -67,7 +67,7 @@
                 <svg id="cuisine-bubbles" height="700" width="700" style="border: 1px solid blue;"></svg>
 
                 <!-- minimap of neighborhood -->
-                <svg id="nbhd-minimap"></svg>
+                <svg id="nbhd-minimap" height="400" width = "400" style="border: 1px solid red;"></svg>
             </div>
         </div>
 
@@ -141,6 +141,7 @@
             console.log(mapData2);
 
             const svg_map = d3.select("#boston-minimap");
+            const svg_nbhd_map = d3.select("#nbhd-minimap");
             const svg_map_W = svg_map.attr("width");
             const svg_map_H = svg_map.attr("height");
             let mapWidth = svg_map_W - margin.left - margin.right;
@@ -251,11 +252,14 @@
             function mouseClickEvent() {
                 
                 const selectedBubble = d3.select(this);
-                const nbhd_cuisines = selectedBubble._groups[0][0].__data__.data.cuisines
+
+                const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
+                const nbhd_cuisines = selectedBubble._groups[0][0].__data__.data.cuisines;
 
                 //If the bubble clicked was in the neighborhood bubble chart
                 if (selectedBubble.attr("class") === "neighborhood") {
                     svg_cuisine_bubbles.html(""); //clears the bubble chart
+                    svg_nbhd_map.html(""); //clears the bubble chart
                     
                     //converting data into bubble chart flattened data
                     var cuisineCounts = [];
@@ -267,10 +271,38 @@
 
                     //call to create new bubble chart
                     createBubbleChart(svg_cuisine_bubbles, cuisineCounts, "cuisine", "restaurants", cuisine_colorScale);
+
+                    //create map of individual neighborhood                    
+                    var filtered_mapData2 = {...mapData2};
+                    var nbhd_data = filtered_mapData2.features.filter(function(d){
+                        return d.properties.name==selected_nbhd})
+
+                    var nbhd_projection_data = filtered_mapData2;
+                    nbhd_projection_data.features = nbhd_data;
+    
+                    let nbhd_map = svg_nbhd_map.append("g")
+                            .attr("transform", "translate("+margin.left+","+margin.top+")");
+
+
+                    let nbhd_projection = d3.geoMercator()
+                                        .fitSize([mapWidth, mapHeight], nbhd_projection_data); 
+                    let nbhd_path = d3.geoPath().projection(nbhd_projection);
+
+                    nbhd_map.selectAll("path.minimap").data(nbhd_data) 
+                    .join("path")
+                    .attr("class", "minimap")
+                    .attr("d", nbhd_path)
+                    .attr("stroke", "white") 
+                    .attr("stroke-width", 0.5)
+                    .attr("fill", "lightgray");
+
                 }
-                if (selectedBubble.attr("class") === "cuisines") {
-                    createRestaurantList();
-                }
+
+                //TO BE IMPLEMENTED -- DISPLAY RESTAURANT LIST
+                
+                // if (selectedBubble.attr("class") === "cuisines") {
+                //     createRestaurantList();
+                // }
             }
 
             //function courtesy of Mike Bostock: https://gist.github.com/mbostock/7555321
