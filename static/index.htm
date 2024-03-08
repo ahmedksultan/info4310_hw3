@@ -5,27 +5,35 @@
         <script src="https://d3js.org/d3.v5.min.js"></script>
         <script src="https://d3js.org/topojson.v2.min.js"></script>
 
+        <script src="https://kit.fontawesome.com/35a2d6f7b8.js" crossorigin="anonymous"></script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Bevan:ital@0;1&display=swap" rel="stylesheet">
+
         <style>
 
             body { 
                 background-color: #f0f0f0;
                 justify-items: center;
             }
+            
 
             h1, p {
-                font-family: "Helvetica";
                 text-align: center;
             }
 
             p {
+                font-family: "Helvetica" !important;
                 color: #1a1a1a;
             }
 
             h1 {
+                font-family: "Bevan";
                 color: #cf1d17;
                 font-size: 72px;
                 margin: 0;
-                padding-top: 5vh;
+                padding-top: 3vh;
             }
 
             text {
@@ -372,22 +380,28 @@
                     cuisine_contents.forEach( (cc) => {
                         // name
                         output += `<div class="card"><h2><a href=${ cc.url }>${ cc.name }</a></h2><div class="info-flex">`;
-                        
+                    
+
                         // AKS : stars still WIP
                         starstring = "";
+
+
+
+
                         if (cc.review_json.rating == "3") {
-                            starstring = "⭑⭑⭑⭒⭒";
+                            starstring = '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>';
                         } else if (cc.review_json.rating == "3.5") {
-                            starstring = "⭑⭑⭑⯨⭒";
+                            starstring = '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half"></i>';
                         } else if (cc.review_json.rating == "4") {
-                            starstring = "⭑⭑⭑⭑⭒";
+                            starstring = '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>';
                         } else if (cc.review_json.rating == "4.5") {
-                            starstring = "⭑⭑⭑⭑⯨";
+                            starstring = '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half"></i>'
                         } else {
-                            starstring = "⭑⭑⭑⭑⭑";
+                            starstring ='<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>';
                         }
 
-                        output += `<p class='ratings'> ${ starstring } (${ cc.review_json.count })`
+                        output += `<p class='ratings'> <span> ${ starstring } </span> (${ cc.review_json.count })</p>`
+
                         cc.categories.forEach( (cat) => { 
                             output += `<p class="category">${ cat }</p>`;
                         })
