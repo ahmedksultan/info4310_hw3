@@ -83,13 +83,15 @@
 
         const requestData = async function() {
 
-            const data = await d3.csv("data/yelp_boston.csv", d3.autoType);
+            const data = await d3.json("data/bos_rest_formatted_2.json", d3.autoType);
+            // const data = await d3.csv("data/yelp_boston.csv", d3.autoType);
 
             //Temporary data for the neighborhoods
             var neighborhoods = {};
+
             data.forEach( d => {
                 var neighborhood = d['neighborhood'];
-                var cuisines = JSON.parse(d.categories_json);
+                var cuisines = d['categories'];
         
                 if (neighborhood !== null) {
                     if (neighborhoods.hasOwnProperty(neighborhood)) {
@@ -107,6 +109,7 @@
                     else {
                         var cuisine_map = [];
                         cuisines.forEach( d => {
+                            console.log(d);
                             var name = d[0];
                             cuisine_map[name] = 1;                          
                         })
@@ -340,7 +343,7 @@
         let neighborhood_counts = {}
 
 
-        const data3 = await d3.json("data/bos_rest_formatted.json");
+        let data3 = await d3.json("data/bos_rest_formatted.json");
 
         data3.forEach( d => {
             d["loc_json"] = JSON.parse(d["loc_json"]);
@@ -354,7 +357,7 @@
 
             if (Object.keys(neighborhood_counts).includes(nbhd)) {
                 if (nbhd == "CANNOTBEFOUND") {
-                    console.log(d["name"] + " " + d["loc_json"]["display_address"][1]);
+                    //console.log(d["name"] + " " + d["loc_json"]["display_address"][1]);
                 }
                 neighborhood_counts[nbhd] = neighborhood_counts[nbhd] + 1;
             } else {
@@ -373,6 +376,8 @@
 
             return output;
         }
+
+        data3 = data3.filter(function (d) { return d["neighborhood"] != "CANNOTBEFOUND"});
 
         console.log(data3);
 
