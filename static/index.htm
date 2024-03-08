@@ -65,15 +65,52 @@
             .info-flex {
                 display: flex;
                 flex-direction: row;
-                margin-left: auto;
                 width: 100%;
                 justify-content: center;
+                margin: 0 auto;
+                padding: 0;
             }
 
             .info-flex > * {
                 padding-left: 1em;
                 padding-right: 1em;
             }
+
+            .card h2 { 
+                font-family: "Bevan";
+                padding: 0;
+                margin: 0;
+            }
+
+            .card a:link {
+                color: #cf1d17;
+            }
+
+            .card a:visited {
+                color: #cf1d17;
+            }
+
+            .card a:hover {
+                color: black;
+            }
+
+            .category {
+                background-color: #cf1d17;
+                color: white;
+                padding: 0.3em;
+                margin: 1em;
+            }
+
+            .card .address, .review-snippet {
+                padding-top: 0.5em;
+                padding-bottom: 0.5em;
+                margin: 0;
+            }
+
+            .card .review-snippet {
+                font-style: italic;
+            }
+            
             
         </style>
     </head>
@@ -400,7 +437,7 @@
                             starstring ='<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>';
                         }
 
-                        output += `<p class='ratings'> <span> ${ starstring } </span> (${ cc.review_json.count })</p>`
+                        output += `<p class='ratings'> <span> ${ starstring } </span> <i> (${ cc.review_json.count }) </i> </p>`
 
                         cc.categories.forEach( (cat) => { 
                             output += `<p class="category">${ cat }</p>`;
@@ -411,7 +448,7 @@
                         cc.loc_json.display_address.forEach ( (da) => {
                             address += da + ", ";
                         })
-                        address = address.slice(0, -2) + "</p>"
+                        address = address.slice(0, -2) + "</p><br>"
                         output += address
 
                         output += `<p class="review-snippet"> ${ cc.review_json.snippet } </p>`;
