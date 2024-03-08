@@ -43,12 +43,12 @@
 
     <body>
         <div class="header">
-            <!-- tentative title idk -->
+            <!-- AKS : Title, styling, explanation? -->
             <h1 class="page-title">foodfinder</h1>
             <p>by <b>Ahmed Sultan</b> (aks264) and <b>Sydney Wan</b> (ssw73), for Prof. Rzeszotarski's INFO 4310 class</p>
         </div>
 
-        <!-- some stuff might go here -->
+        <!-- AKS : here too -->
 
         <!-- using id to facilitate jumping btwn section -->
         <div id="neighborhood-select">
@@ -73,9 +73,9 @@
 
         <div id="restaurant-recs">
             <!-- lowkey just a list/list-like implementation -->
+            <!-- AKS : replace w/ div? ul? unsure -->
             <svg id="restaurant-list" height="700" width="700" style="border: 1px solid blue;"></svg>
 
-            
         </div>
     </body>
 
@@ -84,9 +84,10 @@
         const requestData = async function() {
 
             const data = await d3.json("data/bos_rest_formatted_2.json", d3.autoType);
-            // const data = await d3.csv("data/yelp_boston.csv", d3.autoType);
 
-            //Temporary data for the neighborhoods
+            // -- PHASE I -- Boston-wide view
+
+            // Dynamically collect restaurant counts by neighborhood
             var neighborhoods = {};
 
             data.forEach( d => {
@@ -97,68 +98,71 @@
                     if (neighborhoods.hasOwnProperty(neighborhood)) {
                         neighborhoods[neighborhood]["count"] = neighborhoods[neighborhood]["count"] + 1;
                         
-                        // COUNT THE NUMBER OF RESTAURANTS IN EACH NEIGHBORHOOD
+                        /* AKS : Save this for a dynamic filter?
+                        // store number of restaurants by cuisine in each neighborhood
                         cuisines.forEach( d => {
                             var name = d;
                             if(neighborhoods[neighborhood]["cuisines"].hasOwnProperty(name)) {
                                 neighborhoods[neighborhood]["cuisines"][name] = neighborhoods[neighborhood]["cuisines"][name] + 1;
                             }
                             else { neighborhoods[neighborhood]["cuisines"][name] = 1; }
-                        })
-                    }
-                    else {
+                        }) */
+
+                    } else {
+                        /*
                         var cuisine_map = [];
                         cuisines.forEach( d => {
                             var name = d;
                             cuisine_map[name] = 1;                          
                         })
+                        */
                         neighborhoods[neighborhood] = {
                             'count': 1,
-                            'cuisines': cuisine_map
+                            // 'cuisines': cuisine_map
                         };                       
-                }
-            }}); 
+                    }
+                }}); 
+
             var counts = [];
+            
             Object.entries(neighborhoods).forEach(([key, value]) => {
-                counts.push({'neighborhood': key, 'count': value.count, "cuisines": value.cuisines});
+                counts.push({'neighborhood': key, 'count': value.count, /* "cuisines": value.cuisines */ });
             });
 
-            //Creating bubble chart
+            // Creating neighborhood bubble chart
             const svg_nbhd_bubbles = d3.select("#nbhd-bubbles");
-            const svg_cuisine_bubbles = d3.select("#cuisine-bubbles");
+
             const width = svg_nbhd_bubbles.attr("width");
             const height = svg_nbhd_bubbles.attr("height");
-
             const margin = { top: 5, bottom: 5, right: 5, left: 5 };
             const bubbleWidth = width - margin.left - margin.right;
             const bubbleHeight = height - margin.top - margin.bottom;
 
+            // AKS : Revisit coloring
             const nbhd_colorScale = d3.scaleOrdinal().domain(Object.keys(neighborhoods)).range(d3.schemeSet3);
 
             createBubbleChart(svg_nbhd_bubbles, counts, "neighborhood", "count", nbhd_colorScale);
+
+            // Creating Boston mini-map
+            const mapdata = await d3.json("data/BPDA_Neighborhood_Boundaries.geojson");
             
-            //Create map of Boston
-
-            //Let's get rid of the initial map data? but the second dataset also doesn't have all the neighborhoods
-            //const mapData = await d3.json("data/boston_nbhds.json", d3.autoType);
-            const mapData2 = await d3.json("data/BPDA_Neighborhood_Boundaries.geojson");
-            console.log(mapData2);
-
             const svg_map = d3.select("#boston-minimap");
+
             const svg_nbhd_map = d3.select("#nbhd-minimap");
             const svg_map_W = svg_map.attr("width");
             const svg_map_H = svg_map.attr("height");
             let mapWidth = svg_map_W - margin.left - margin.right;
             let mapHeight = svg_map_H - margin.top - margin.bottom;
-            let map = svg_map.append("g")
-                            .attr("transform", "translate("+margin.left+","+margin.top+")");
 
+            let map = svg_map.append("g")
+                .attr("transform", "translate("+margin.left+","+margin.top+")");
 
             let projection = d3.geoMercator()
-                                .fitSize([mapWidth, mapHeight], mapData2); 
+                .fitSize([mapWidth, mapHeight], mapdata); 
             let path = d3.geoPath().projection(projection);
 
-            map.selectAll("path.neighborhood").data(mapData2.features) 
+            // AKS : may have to revisit coloring and scale as well
+            map.selectAll("path.neighborhood").data(mapdata.features) 
                     .join("path")
                     .attr("class", "neighborhood")
                     .attr("id", d => d.properties.name.replace(/\s+/g, ''))
@@ -166,6 +170,18 @@
                     .attr("stroke", "white") 
                     .attr("stroke-width", 0.5)
                     .attr("fill", "lightgray");
+            
+            
+            const svg_cuisine_bubbles = d3.select("#cuisine-bubbles");
+
+           
+            
+            
+
+
+            
+
+            
 
             function createBubbleChart(svg, data, name, value, colorScale) {
                 const pack = d3.pack()
@@ -223,7 +239,7 @@
 
                 if (bubble.attr("class") === "neighborhood") {
                     var selected_nbhd = bubble._groups[0][0].__data__.data.neighborhood;
-                    mapData2["features"].forEach(n => {
+                    mapdata["features"].forEach(n => {
                         if (n.properties.name === selected_nbhd) {
                             selected_nbhd = selected_nbhd.replace(/\s+/g, '')
                             map.selectAll(`path#${selected_nbhd}`)
@@ -241,7 +257,7 @@
 
                 if (bubble.attr("class") === "neighborhood") {
                     var selected_nbhd = bubble._groups[0][0].__data__.data.neighborhood;
-                    mapData2["features"].forEach(n => {
+                    mapdata["features"].forEach(n => {
                         if (n.properties.name === selected_nbhd) {
                             selected_nbhd = selected_nbhd.replace(/\s+/g, '')
                             map.selectAll(`path#${selected_nbhd}`)
@@ -256,11 +272,25 @@
             function mouseClickEvent() {
                 
                 const selectedBubble = d3.select(this);
-
                 console.log(selectedBubble);
 
                 const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
-                const nbhd_cuisines = selectedBubble._groups[0][0].__data__.data.cuisines;
+                const nbhd_contents = data.filter((d) => d["neighborhood"] == selected_nbhd );
+                console.log(nbhd_contents);
+
+                const content_counts = {}
+                nbhd_contents.forEach( (nc) => { 
+                    nc["categories"].forEach( (c) => {
+                        if (Object.keys(content_counts).includes(c)) {
+                            content_counts[c] += 1;
+                        } else {
+                            content_counts[c] = 1;
+                        }
+                    }) 
+                })
+                console.log(content_counts);
+
+               
 
                 //If the bubble clicked was in the neighborhood bubble chart
                 if (selectedBubble.attr("class") === "neighborhood") {
@@ -271,21 +301,21 @@
                     
                     //converting data into bubble chart flattened data
                     var cuisineCounts = [];
-                    Object.entries(nbhd_cuisines).forEach(([key, value]) => {
+                    Object.entries(content_counts).forEach(([key, value]) => {
                         cuisineCounts.push({'cuisine': key, 'restaurants': value});
                     });
                     
-                    const cuisine_colorScale = d3.scaleOrdinal().domain(Object.keys(nbhd_cuisines)).range(d3.schemeSet3);
+                    const cuisine_colorScale = d3.scaleOrdinal().domain(Object.keys(content_counts)).range(d3.schemeSet3);
 
                     //call to create new bubble chart
                     createBubbleChart(svg_cuisine_bubbles, cuisineCounts, "cuisine", "restaurants", cuisine_colorScale);
 
                     //create map of individual neighborhood                    
-                    var filtered_mapData2 = {...mapData2};
-                    var nbhd_data = filtered_mapData2.features.filter(function(d){
+                    var filtered_mapdata = {...mapdata};
+                    var nbhd_data = filtered_mapdata.features.filter(function(d){
                         return d.properties.name==selected_nbhd})
 
-                    var nbhd_projection_data = filtered_mapData2;
+                    var nbhd_projection_data = filtered_mapdata;
                     nbhd_projection_data.features = nbhd_data;
     
                     let nbhd_map = svg_nbhd_map.append("g")
@@ -369,7 +399,7 @@
         function nbhdChecker(lon, lat) {
             output = "CANNOTBEFOUND";
 
-            mapData2["features"].forEach(n => {
+            mapdata["features"].forEach(n => {
                 if (d3.geoContains(n, [lon, lat])) {
                     output = n["properties"]["name"];
                 }
@@ -383,7 +413,7 @@
         console.log(data3);
 
         console.log(neighborhood_counts);
-        console.log(mapData2.features);
+        console.log(mapdata.features);
     }
 
 
