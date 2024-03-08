@@ -206,6 +206,7 @@
             const mapdata = await d3.json("data/BPDA_Neighborhood_Boundaries.geojson");
             
             const svg_map = d3.select("#boston-minimap");
+            
 
             const svg_nbhd_map = d3.select("#nbhd-minimap");
             const svg_map_W = svg_map.attr("width");
@@ -286,9 +287,9 @@
             function mouseEntersState() {
                 var bubble = d3.select(this);
                 bubble.attr("opacity", 0.6);
+                var selected_nbhd = bubble._groups[0][0].__data__.data.neighborhood;
 
                 if (bubble.attr("class") === "neighborhood") {
-                    var selected_nbhd = bubble._groups[0][0].__data__.data.neighborhood;
                     mapdata["features"].forEach(n => {
                         if (n.properties.name === selected_nbhd) {
                             selected_nbhd = selected_nbhd.replace(/\s+/g, '')
@@ -296,7 +297,14 @@
                                 .attr("d", path)
                                 .attr("fill", "#80b1d3");
                         }
-                    });
+                    })};
+
+                if (bubble.attr("class") === "cuisine") {
+
+                    const selected_cuisine = bubble._groups[0][0].__data__.data.cuisine;
+                    var nbhd_contents = data.filter((d) => d["neighborhood"] == selected_nbhd && d["categories"].includes(selected_cuisine) );
+                    
+                    plotNbhdMap(selected_nbhd, nbhd_contents);
 
                 }
             }
@@ -304,9 +312,9 @@
             function mouseLeavesState() {
                 var bubble = d3.select(this);
                 bubble.attr("opacity", 1);
+                var selected_nbhd = bubble._groups[0][0].__data__.data.neighborhood;
 
                 if (bubble.attr("class") === "neighborhood") {
-                    var selected_nbhd = bubble._groups[0][0].__data__.data.neighborhood;
                     mapdata["features"].forEach(n => {
                         if (n.properties.name === selected_nbhd) {
                             selected_nbhd = selected_nbhd.replace(/\s+/g, '')
@@ -317,6 +325,11 @@
                     });
 
                 }
+                if (bubble.attr("class") === "cuisine") {
+                    plotNbhdMap(selected_nbhd, data.filter((d) => d["neighborhood"] == selected_nbhd));
+                }
+
+
             }
 
             function mouseClickEvent() {
@@ -367,40 +380,7 @@
                     // ----------------------
 
                     // Create map of selected neighborhood                    
-                    var filtered_mapdata = {...mapdata};
-                    var nbhd_data = filtered_mapdata.features.filter(function(d){
-                        return d.properties.name==selected_nbhd})
-
-                    var nbhd_projection_data = filtered_mapdata;
-                    nbhd_projection_data.features = nbhd_data;
-    
-                    let nbhd_map = svg_nbhd_map.append("g")
-                            .attr("transform", "translate("+margin.left+","+margin.top+")");
-
-                    let nbhd_projection = d3.geoMercator()
-                        .fitSize([mapWidth, mapHeight], nbhd_projection_data); 
-                    let nbhd_path = d3.geoPath().projection(nbhd_projection);
-
-                    nbhd_map.selectAll("path.minimap").data(nbhd_data) 
-                        .join("path")
-                        .attr("class", "minimap")
-                        .attr("d", nbhd_path)
-                        .attr("stroke", "white") 
-                        .attr("stroke-width", 0.5)
-                        .attr("fill", "lightgray");
-
-                    // Plotting restaurants
-                    nbhd_map.selectAll("circle").data(nbhd_contents)
-                        .join("circle")
-                        // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
-                        .attr("r", 4)
-                        .attr("fill", "red")
-                        .attr("opacity", 0.7)
-                        .attr("cx", d => 
-                            nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
-                        .attr("cy", d => 
-                            nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [1] )
-                        .attr("pointer-events", "none");
+                    plotNbhdMap(selected_nbhd, nbhd_contents);
                 }
 
                 // -- PHASE III -- Cuisine-specific restaurant list
@@ -460,6 +440,45 @@
                     
                     document.getElementById("restaurant-recs").scrollIntoView({behavior: "smooth"});
                 }
+            }
+
+            function plotNbhdMap(selected_nbhd, nbhd_contents) {
+                var filtered_mapdata = {...mapdata};
+                    var nbhd_data = filtered_mapdata.features.filter(function(d){
+                        return d.properties.name==selected_nbhd})
+
+                    var nbhd_projection_data = filtered_mapdata;
+                    nbhd_projection_data.features = nbhd_data;
+    
+
+                    let nbhd_projection = d3.geoMercator()
+                        .fitSize([mapWidth, mapHeight], nbhd_projection_data); 
+                    let nbhd_path = d3.geoPath().projection(nbhd_projection);
+
+                    let nbhd_map = svg_nbhd_map.append("g")
+                            .attr("transform", "translate("+margin.left+","+margin.top+")");
+
+                    nbhd_map.selectAll("path.minimap").data(nbhd_data) 
+                        .join("path")
+                        .attr("class", "minimap")
+                        .attr("d", nbhd_path)
+                        .attr("stroke", "white") 
+                        .attr("stroke-width", 0.5)
+                        .attr("fill", "lightgray");
+
+                    // Plotting restaurants
+                    nbhd_map.selectAll("circle").data(nbhd_contents)
+                        .join("circle")
+                        // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
+                        .attr("r", 4)
+                        .attr("fill", "red")
+                        .attr("opacity", 0.7)
+                        .attr("cx", d => 
+                            nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
+                        .attr("cy", d => 
+                            nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [1] )
+                        .attr("pointer-events", "none");
+
             }
 
             //function courtesy of Mike Bostock: https://gist.github.com/mbostock/7555321
