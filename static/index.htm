@@ -99,7 +99,7 @@
                         
                         // COUNT THE NUMBER OF RESTAURANTS IN EACH NEIGHBORHOOD
                         cuisines.forEach( d => {
-                            var name = d[0];
+                            var name = d;
                             if(neighborhoods[neighborhood]["cuisines"].hasOwnProperty(name)) {
                                 neighborhoods[neighborhood]["cuisines"][name] = neighborhoods[neighborhood]["cuisines"][name] + 1;
                             }
@@ -109,8 +109,7 @@
                     else {
                         var cuisine_map = [];
                         cuisines.forEach( d => {
-                            console.log(d);
-                            var name = d[0];
+                            var name = d;
                             cuisine_map[name] = 1;                          
                         })
                         neighborhoods[neighborhood] = {
@@ -257,6 +256,8 @@
             function mouseClickEvent() {
                 
                 const selectedBubble = d3.select(this);
+
+                console.log(selectedBubble);
 
                 const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
                 const nbhd_cuisines = selectedBubble._groups[0][0].__data__.data.cuisines;
