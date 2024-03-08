@@ -272,7 +272,7 @@
             function mouseClickEvent() {
                 
                 const selectedBubble = d3.select(this);
-                console.log(selectedBubble);
+                // console.log(selectedBubble);
 
                 const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
                 const nbhd_contents = data.filter((d) => d["neighborhood"] == selected_nbhd );
@@ -288,18 +288,15 @@
                         }
                     }) 
                 })
-                console.log(content_counts);
+                /// console.log(content_counts);
 
-               
-
-                //If the bubble clicked was in the neighborhood bubble chart
                 if (selectedBubble.attr("class") === "neighborhood") {
                     svg_cuisine_bubbles.html(""); //clears the bubble chart
                     svg_nbhd_map.html(""); //clears the bubble chart
 
                     document.getElementById("cuisine-select").scrollIntoView({behavior: "smooth"});
                     
-                    //converting data into bubble chart flattened data
+                    // Converting data into bubble chart flattened data
                     var cuisineCounts = [];
                     Object.entries(content_counts).forEach(([key, value]) => {
                         cuisineCounts.push({'cuisine': key, 'restaurants': value});
@@ -307,10 +304,12 @@
                     
                     const cuisine_colorScale = d3.scaleOrdinal().domain(Object.keys(content_counts)).range(d3.schemeSet3);
 
-                    //call to create new bubble chart
+                    // Call to create new bubble chart
                     createBubbleChart(svg_cuisine_bubbles, cuisineCounts, "cuisine", "restaurants", cuisine_colorScale);
 
-                    //create map of individual neighborhood                    
+                    // ----------------------
+
+                    // Create map of selected neighborhood                    
                     var filtered_mapdata = {...mapdata};
                     var nbhd_data = filtered_mapdata.features.filter(function(d){
                         return d.properties.name==selected_nbhd})
@@ -321,18 +320,30 @@
                     let nbhd_map = svg_nbhd_map.append("g")
                             .attr("transform", "translate("+margin.left+","+margin.top+")");
 
-
                     let nbhd_projection = d3.geoMercator()
-                                        .fitSize([mapWidth, mapHeight], nbhd_projection_data); 
+                        .fitSize([mapWidth, mapHeight], nbhd_projection_data); 
                     let nbhd_path = d3.geoPath().projection(nbhd_projection);
 
                     nbhd_map.selectAll("path.minimap").data(nbhd_data) 
-                    .join("path")
-                    .attr("class", "minimap")
-                    .attr("d", nbhd_path)
-                    .attr("stroke", "white") 
-                    .attr("stroke-width", 0.5)
-                    .attr("fill", "lightgray");
+                        .join("path")
+                        .attr("class", "minimap")
+                        .attr("d", nbhd_path)
+                        .attr("stroke", "white") 
+                        .attr("stroke-width", 0.5)
+                        .attr("fill", "lightgray");
+
+                    // Plotting restaurants
+                    nbhd_map.selectAll("circle").data(nbhd_contents)
+                        .join("circle")
+                        // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
+                        .attr("r", 4)
+                        .attr("fill", "red")
+                        .attr("opacity", 0.7)
+                        .attr("cx", d => 
+                            nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
+                        .attr("cy", d => 
+                            nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [1] )
+                        .attr("pointer-events", "none");
 
                 }
 
