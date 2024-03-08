@@ -83,20 +83,20 @@
         <div id="neighborhood-select">
             <div class="container">
                 <!-- bubble chart force graph w/ neighborhoods? -->
-                <svg id="nbhd-bubbles" height="700" width="700" style="border: 1px solid blue;"></svg>
+                <svg id="nbhd-bubbles" height="700" width="700" style="border: none;"></svg>
 
                 <!-- minimap of boston -->
-                <svg id="boston-minimap" height="400" width = "400" style="border: 1px solid red;"></svg>
+                <svg id="boston-minimap" height="400" width = "400" style="border: none;"></svg>
             </div>
         </div>
 
         <div id="cuisine-select">
             <div class="container">
                 <!-- bubble chart force graph w/ cuisines? -->
-                <svg id="cuisine-bubbles" height="700" width="700" style="border: 1px solid blue;"></svg>
+                <svg id="cuisine-bubbles" height="700" width="700" style="border: none;"></svg>
 
                 <!-- minimap of neighborhood -->
-                <svg id="nbhd-minimap" height="400" width = "400" style="border: 1px solid red;"></svg>
+                <svg id="nbhd-minimap" height="400" width = "400" style="border: none;"></svg>
             </div>
         </div>
 
@@ -123,28 +123,9 @@
                 if (neighborhood !== null) {
                     if (neighborhoods.hasOwnProperty(neighborhood)) {
                         neighborhoods[neighborhood]["count"] = neighborhoods[neighborhood]["count"] + 1;
-                        
-                        /* AKS : Save this for a dynamic filter?
-                        // store number of restaurants by cuisine in each neighborhood
-                        cuisines.forEach( d => {
-                            var name = d;
-                            if(neighborhoods[neighborhood]["cuisines"].hasOwnProperty(name)) {
-                                neighborhoods[neighborhood]["cuisines"][name] = neighborhoods[neighborhood]["cuisines"][name] + 1;
-                            }
-                            else { neighborhoods[neighborhood]["cuisines"][name] = 1; }
-                        }) */
-
                     } else {
-                        /*
-                        var cuisine_map = [];
-                        cuisines.forEach( d => {
-                            var name = d;
-                            cuisine_map[name] = 1;                          
-                        })
-                        */
                         neighborhoods[neighborhood] = {
                             'count': 1,
-                            // 'cuisines': cuisine_map
                         };                       
                     }
                 }}); 
@@ -164,8 +145,15 @@
             const bubbleWidth = width - margin.left - margin.right;
             const bubbleHeight = height - margin.top - margin.bottom;
 
+            let nbhd_counts = [];
+            Object.values(neighborhoods).forEach( (n) => nbhd_counts.push(n["count"]) );
+
             // AKS : Revisit coloring
-            const nbhd_colorScale = d3.scaleOrdinal().domain(Object.keys(neighborhoods)).range(d3.schemeSet3);
+            const nbhd_colorScale = d3.scaleLinear()
+                    .domain(d3.extent([0, 20]))
+                    .range(["#fee5d9","#fcae91","#fb6a4a","#de2d26","#a50f15"]);
+            
+            console.log(nbhd_colorScale);
 
             createBubbleChart(svg_nbhd_bubbles, counts, "neighborhood", "count", nbhd_colorScale);
 
@@ -198,18 +186,13 @@
                     .attr("fill", "lightgray");
             
             
+            // -- PHASE II -- Neigborhood-specific cuisine view
+
             const svg_cuisine_bubbles = d3.select("#cuisine-bubbles");
 
-           
-            
-            
-
-
-            
-
-            
-
             function createBubbleChart(svg, data, name, value, colorScale) {
+                console.log(colorScale);
+
                 const pack = d3.pack()
                             .size([bubbleWidth, bubbleHeight])
                             .padding(3);
@@ -224,24 +207,25 @@
                                                 .join("g")
                                                 .attr("transform", d => `translate(${d.x},${d.y})`);
                 
+
                 bubbles.append("circle")
                         .attr("class", name)
                         .attr("r", d => d.r)
-                        .attr("fill", d => colorScale(d.data[name]))
+                        .attr("fill", d => colorScale(d.data[value]))
                         .on('mouseover', mouseEntersState)
                         .on('mouseout', mouseLeavesState)
                         .on("click", mouseClickEvent);
 
-                //issue with hover over the words
                 bubbles.append("text")
                         .attr("dy", "-0.3em")
                         .style("text-anchor", "middle")
                         .style("font-weight", 600)
                         .style("font-size", function(d) {
-                            if (d.r < 30) { return 8; } //could probably dynamically program this to calculate font size
+                            if (d.r < 40) { return 8; } //could probably dynamically program this to calculate font size
                             return 15;                  
                         })
                         .text(d => d.data[name])
+                        .attr("pointer-events", "none");
                         //.call(wrap, 30); //how do i call this on only the small bubbles?
 
                 bubbles.append("text")
@@ -252,13 +236,6 @@
                             return 15;
                         })
                         .text(d => d.data[value]);
-            }
-
-            //will eventually display list of restaurants 
-            function createRestaurantList() {
-                output = "";
-
-                document.getElementById('legend').innerHTML = "Your HTML here";
             }
 
             function mouseEntersState() {
@@ -300,12 +277,12 @@
             function mouseClickEvent() {
                 
                 const selectedBubble = d3.select(this);
-                console.log(selectedBubble);
+                // console.log(selectedBubble);
 
                 if (selectedBubble.attr("class") === "neighborhood") {
                     const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
                     const nbhd_contents = data.filter((d) => d["neighborhood"] == selected_nbhd );
-                    console.log(nbhd_contents);
+                    // console.log(nbhd_contents);
 
                     const content_counts = {}
                     nbhd_contents.forEach( (nc) => { 
@@ -329,8 +306,15 @@
                     Object.entries(content_counts).forEach(([key, value]) => {
                         cuisineCounts.push({'cuisine': key, 'restaurants': value, 'neighborhood': selected_nbhd});
                     });
+
+                    console.log(cuisineCounts);
+
                     
-                    const cuisine_colorScale = d3.scaleOrdinal().domain(Object.keys(content_counts)).range(d3.schemeSet3);
+                    const cuisine_colorScale = d3.scaleOrdinal()
+                        .domain(Object.keys(cuisineCounts))
+                        .range(d3.schemeSet3);
+
+                    
 
                     // Call to create new bubble chart
                     createBubbleChart(svg_cuisine_bubbles, cuisineCounts, "cuisine", "restaurants", cuisine_colorScale);
@@ -374,6 +358,8 @@
                         .attr("pointer-events", "none");
                 }
 
+                // -- PHASE III -- Cuisine-specific restaurant list
+
                 // Display restaurant details-on-demand
                 if (selectedBubble.attr("class") === "cuisine") {
                     const selected_cuisine = selectedBubble._groups[0][0].__data__.data.cuisine;
@@ -387,7 +373,7 @@
                         // name
                         output += `<div class="card"><h2><a href=${ cc.url }>${ cc.name }</a></h2><div class="info-flex">`;
                         
-                        // stars TBD 
+                        // AKS : stars still WIP
                         starstring = "";
                         if (cc.review_json.rating == "3") {
                             starstring = "⭑⭑⭑⭒⭒";
@@ -415,7 +401,6 @@
                         output += address
 
                         output += `<p class="review-snippet"> ${ cc.review_json.snippet } </p>`;
-                        
 
                         output += "</div><hr>"
                     })
@@ -423,7 +408,6 @@
                     document.getElementById("restaurant-recs").innerHTML = output;
                     
                     document.getElementById("restaurant-recs").scrollIntoView({behavior: "smooth"});
-                //     createRestaurantList();
                 }
             }
 
@@ -453,7 +437,7 @@
 
         }
 
-        /* 
+        /*
 
         let neighborhood_counts = {}
 
@@ -500,6 +484,7 @@
         console.log(mapdata.features);
 
         */
+
     }
 
 
