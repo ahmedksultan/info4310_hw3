@@ -154,7 +154,9 @@
 
         const requestData = async function() {
 
-            const data = await d3.json("data/bos_rest_formatted_2.json", d3.autoType);
+            let data = await d3.json("data/bos_rest_formatted_2.json", d3.autoType);
+            data = data.filter((v,i,a)=>a.findIndex(v2=>['neighborhood','name'].every(k=>v2[k] ===v[k]))===i);
+
 
             // -- PHASE I -- Boston-wide view
 
