@@ -260,6 +260,8 @@
                 if (selectedBubble.attr("class") === "neighborhood") {
                     svg_cuisine_bubbles.html(""); //clears the bubble chart
                     svg_nbhd_map.html(""); //clears the bubble chart
+
+                    document.getElementById("cuisine-select").scrollIntoView({behavior: "smooth"});
                     
                     //converting data into bubble chart flattened data
                     var cuisineCounts = [];
@@ -299,7 +301,7 @@
                 }
 
                 //TO BE IMPLEMENTED -- DISPLAY RESTAURANT LIST
-                
+
                 // if (selectedBubble.attr("class") === "cuisines") {
                 //     createRestaurantList();
                 // }
