@@ -35,12 +35,23 @@
             .container {
                 display: flex;
                 align-items: flex-start;
+                justify-content: center;
                 padding: 20px;
+            }
+
+            hr {
+                width: 70vw !important;
+            }
+
+            .restaurant-recs {
+                justify-content: center;
+                align-content: center;
             }
 
             .card {
                 text-align: center;
-                align-content: center;
+                margin: auto;
+                width: 70vw !important;
             }
 
             .info-flex {
@@ -90,62 +101,7 @@
         </div>
 
         <div id="restaurant-recs">
-            <!-- lowkey just a list/list-like implementation -->
-            <!-- AKS : replace w/ div? ul? unsure -->
-            <svg id="restaurant-list" height="700" width="700" style="border: 1px solid blue;"></svg>
-            
-            <!--
-                {
-                    "name": "Swish Shabu",
-                    "categories": [
-                        "japanese",
-                        "sushi",
-                        "hotpot"
-                    ],
-                    "neighborhood": "Fenway",
-                    "loc_json": {
-                        "city": "Boston",
-                        "display_address": [
-                        "84 86 Peterborough St",
-                        "Fenway",
-                        "Boston, MA 02215"
-                        ],
-                        "geo_accuracy": 8,
-                        "neighborhoods": [
-                        "Fenway"
-                        ],
-                        "postal_code": "02215",
-                        "country_code": "US",
-                        "address": [
-                        "84 86 Peterborough St"
-                        ],
-                        "coordinate": {
-                        "latitude": 42.3430901,
-                        "longitude": -71.0991135
-                        },
-                        "state_code": "MA"
-                    },
-                    "review_json": {
-                        "rating": "4",
-                        "count": "176",
-                        "snippet": "I came here for Valentine's Day dinner and I was not disappointed. I had only had hot pot one time before and I didn't really remember the previous..."
-                    },
-                    "url": "http://www.yelp.com/biz/swish-shabu-boston"
-                }
-            -->
-
-            <!--- 
-            <div class="card">
-                <h2>Restaurant title</h2>
-                <div class="info-flex">
-                    <p>★★★★☆ (60)</p> 
-                    <p>Hello</p>
-                    <p>Goodbye</p>
-                </div>
-                <span>"84 86 Peterborough St", "Fenway", "Boston, MA 02215"</span>
-            </div>
-           --->
-
+            <!-- populated in script -->
         </div>
     </body>
 
@@ -418,19 +374,18 @@
                         .attr("pointer-events", "none");
                 }
 
-                //TO BE IMPLEMENTED -- DISPLAY RESTAURANT LIST
-
+                // Display restaurant details-on-demand
                 if (selectedBubble.attr("class") === "cuisine") {
                     const selected_cuisine = selectedBubble._groups[0][0].__data__.data.cuisine;
                     const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
                     const cuisine_contents = data.filter((d) => (d["neighborhood"] == selected_nbhd) && (d["categories"].includes(selected_cuisine)));
                     console.log(cuisine_contents);
 
-                    output = '';
+                    output = '<hr>';
 
                     cuisine_contents.forEach( (cc) => {
                         // name
-                        output += `<div class="card"><h2>${ cc.name }</h2><div class="info-flex">`;
+                        output += `<div class="card"><h2><a href=${ cc.url }>${ cc.name }</a></h2><div class="info-flex">`;
                         
                         // stars TBD 
                         starstring = "";
