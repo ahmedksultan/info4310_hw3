@@ -122,10 +122,10 @@
             <p>by <b>Ahmed Sultan</b> (aks264) and <b>Sydney Wan</b> (ssw73), for Prof. Rzeszotarski's INFO 4310 class</p>
         </div>
 
-        <!-- AKS : here too -->
-
         <!-- using id to facilitate jumping btwn section -->
         <div id="neighborhood-select">
+            <hr>
+            <p style="font-size: 24px; font-family: serif !important; font-style: italic;">1) Select a neighborhood.</p>
             <div class="container">
                 <!-- bubble chart force graph w/ neighborhoods? -->
                 <svg id="nbhd-bubbles" height="700" width="700" style="border: none;"></svg>
@@ -136,6 +136,8 @@
         </div>
 
         <div id="cuisine-select">
+            <hr>
+            <p style="font-size: 24px; font-family: serif !important; font-style: italic;">2) Now, select a category/cuisine.</p>
             <div class="container">
                 <!-- bubble chart force graph w/ cuisines? -->
                 <svg id="cuisine-bubbles" height="700" width="700" style="border: none;"></svg>
@@ -200,7 +202,6 @@
                     .domain(d3.extent([0, 20]))
                     .range(["#fee5d9","#fcae91","#fb6a4a","#de2d26","#a50f15"]);
             
-            console.log(nbhd_colorScale);
 
             createBubbleChart(svg_nbhd_bubbles, counts, "neighborhood", "count", nbhd_colorScale);
 
@@ -239,7 +240,6 @@
             const svg_cuisine_bubbles = d3.select("#cuisine-bubbles");
 
             function createBubbleChart(svg, data, name, value, colorScale) {
-                console.log(colorScale);
 
                 const pack = d3.pack()
                             .size([bubbleWidth, bubbleHeight])
@@ -367,8 +367,6 @@
                         cuisineCounts.push({'cuisine': key, 'restaurants': value, 'neighborhood': selected_nbhd});
                     });
 
-                    console.log(cuisineCounts);
-
                     
                     const cuisine_colorScale = d3.scaleOrdinal()
                         .domain(Object.keys(cuisineCounts))
@@ -392,20 +390,12 @@
                     const selected_cuisine = selectedBubble._groups[0][0].__data__.data.cuisine;
                     const selected_nbhd = selectedBubble._groups[0][0].__data__.data.neighborhood;
                     const cuisine_contents = data.filter((d) => (d["neighborhood"] == selected_nbhd) && (d["categories"].includes(selected_cuisine)));
-                    console.log(cuisine_contents);
 
                     output = '<hr>';
 
                     cuisine_contents.forEach( (cc) => {
                         // name
                         output += `<div class="card"><h2><a href=${ cc.url }>${ cc.name }</a></h2><div class="info-flex">`;
-                    
-
-                        // AKS : stars still WIP
-                        starstring = "";
-
-
-
 
                         if (cc.review_json.rating == "3") {
                             starstring = '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>';
@@ -470,10 +460,9 @@
                                 .attr("fill", "lightgray");
                         nbhd_map.selectAll("circle").data(nbhd_contents)
                             .join("circle")
-                            // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
                             .attr("r", 4)
-                            .attr("fill", "red")
-                            .attr("opacity", 0.7)
+                            .attr("fill", "grey")
+                            .attr("opacity", 0.2)
                             .attr("cx", d => 
                                 nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
                             .attr("cy", d => 
@@ -486,8 +475,8 @@
                                 .join("circle")
                                 // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
                                 .attr("r", 4)
-                                .attr("fill", "red")
-                                .attr("opacity", 0.7)
+                                .attr("fill", "grey")
+                                .attr("opacity", 0.2)
                                 .attr("cx", d => 
                                     nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
                                 .attr("cy", d => 
@@ -500,7 +489,7 @@
                                 .join("circle")
                                 // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
                                 .attr("r", 4)
-                                .attr("fill", "black")
+                                .attr("fill", "#cf1d17")
                                 .attr("opacity", 0.7)
                                 .attr("cx", d => 
                                     nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
@@ -508,9 +497,6 @@
                                     nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [1] )
                                 .attr("pointer-events", "none");
                     }
-                    
-
-                    // Plotting restaurants
                    
 
             }
@@ -541,7 +527,7 @@
 
         }
 
-        /*
+        /* -- Data-wrangling code preserved for reference
 
         let neighborhood_counts = {}
 

@@ -2,7 +2,7 @@
   {
     "name": "Wheelhouse",
     "categories": [
-      "breakfast_brunch",
+      "brunch",
       "burgers",
       "sandwiches"
     ],
@@ -263,7 +263,7 @@
     "categories": [
       "spanish",
       "wine_bars",
-      "tapasmallplates"
+      "tapasplates"
     ],
     "neighborhood": "South End",
     "loc_json": {
@@ -375,7 +375,7 @@
     "name": "Mike & Patty's",
     "categories": [
       "sandwiches",
-      "breakfast_brunch"
+      "brunch"
     ],
     "neighborhood": "Bay Village",
     "loc_json": {
@@ -1015,7 +1015,7 @@
   {
     "name": "Blunch",
     "categories": [
-      "breakfast_brunch",
+      "brunch",
       "coffee"
     ],
     "neighborhood": "South End",
@@ -1275,7 +1275,7 @@
   {
     "name": "Olga's Kafe",
     "categories": [
-      "breakfast_brunch",
+      "brunch",
       "coffee"
     ],
     "neighborhood": "Downtown",
@@ -1640,7 +1640,7 @@
     "categories": [
       "newamerican",
       "lounges",
-      "breakfast_brunch"
+      "brunch"
     ],
     "neighborhood": "Fenway",
     "loc_json": {
@@ -2552,7 +2552,7 @@
   {
     "name": "Wheelhouse",
     "categories": [
-      "breakfast_brunch",
+      "brunch",
       "burgers",
       "sandwiches"
     ],
@@ -2926,7 +2926,7 @@
     "name": "Mike & Patty's",
     "categories": [
       "sandwiches",
-      "breakfast_brunch"
+      "brunch"
     ],
     "neighborhood": "Bay Village",
     "loc_json": {
@@ -3107,7 +3107,7 @@
     "name": "Back Bay Sandwich",
     "categories": [
       "sandwiches",
-      "breakfast_brunch"
+      "brunch"
     ],
     "neighborhood": "Back Bay",
     "loc_json": {
@@ -3660,7 +3660,7 @@
     "categories": [
       "coffee",
       "sandwiches",
-      "breakfast_brunch",
+      "brunch",
       "cafes"
     ],
     "neighborhood": "Downtown",
@@ -4461,7 +4461,7 @@
     "categories": [
       "japanese",
       "sushi",
-      "tapasmallplates"
+      "tapasplates"
     ],
     "neighborhood": "Allston",
     "loc_json": {
@@ -5338,7 +5338,7 @@
     "categories": [
       "japanese",
       "sushi",
-      "tapasmallplates"
+      "tapasplates"
     ],
     "neighborhood": "Allston",
     "loc_json": {
@@ -8014,7 +8014,7 @@
     "name": "Twin DO-Nuts",
     "categories": [
       "donuts",
-      "breakfast_brunch"
+      "brunch"
     ],
     "neighborhood": "Allston",
     "loc_json": {
@@ -9427,8 +9427,8 @@
     "name": "Coppa",
     "categories": [
       "italian",
-      "tapasmallplates",
-      "breakfast_brunch"
+      "tapasplates",
+      "brunch"
     ],
     "neighborhood": "South End",
     "loc_json": {
@@ -9465,7 +9465,7 @@
     "name": "Anthony's Cafe",
     "categories": [
       "italian",
-      "breakfast_brunch"
+      "brunch"
     ],
     "neighborhood": "North End",
     "loc_json": {
