@@ -306,7 +306,7 @@
                     const selected_cuisine = bubble._groups[0][0].__data__.data.cuisine;
                     var nbhd_contents = data.filter((d) => d["neighborhood"] == selected_nbhd && d["categories"].includes(selected_cuisine) );
                     
-                    plotNbhdMap(selected_nbhd, nbhd_contents);
+                    plotNbhdMap(selected_nbhd, nbhd_contents, "hover");
 
                 }
             }
@@ -328,7 +328,7 @@
 
                 }
                 if (bubble.attr("class") === "cuisine") {
-                    plotNbhdMap(selected_nbhd, data.filter((d) => d["neighborhood"] == selected_nbhd));
+                    plotNbhdMap(selected_nbhd, data.filter((d) => d["neighborhood"] == selected_nbhd), "hoveroff");
                 }
 
 
@@ -382,7 +382,7 @@
                     // ----------------------
 
                     // Create map of selected neighborhood                    
-                    plotNbhdMap(selected_nbhd, nbhd_contents);
+                    plotNbhdMap(selected_nbhd, nbhd_contents, "click");
                 }
 
                 // -- PHASE III -- Cuisine-specific restaurant list
@@ -444,7 +444,7 @@
                 }
             }
 
-            function plotNbhdMap(selected_nbhd, nbhd_contents) {
+            function plotNbhdMap(selected_nbhd, nbhd_contents, interaction) {
                 var filtered_mapdata = {...mapdata};
                     var nbhd_data = filtered_mapdata.features.filter(function(d){
                         return d.properties.name==selected_nbhd})
@@ -459,27 +459,59 @@
 
                     let nbhd_map = svg_nbhd_map.append("g")
                             .attr("transform", "translate("+margin.left+","+margin.top+")");
+                    
+                    if (interaction === "click") {
+                        nbhd_map.selectAll("path.minimap").data(nbhd_data) 
+                                .join("path")
+                                .attr("class", "minimap")
+                                .attr("d", nbhd_path)
+                                .attr("stroke", "white") 
+                                .attr("stroke-width", 0.5)
+                                .attr("fill", "lightgray");
+                        nbhd_map.selectAll("circle").data(nbhd_contents)
+                            .join("circle")
+                            // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
+                            .attr("r", 4)
+                            .attr("fill", "red")
+                            .attr("opacity", 0.7)
+                            .attr("cx", d => 
+                                nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
+                            .attr("cy", d => 
+                                nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [1] )
+                            .attr("pointer-events", "none");
 
-                    nbhd_map.selectAll("path.minimap").data(nbhd_data) 
-                        .join("path")
-                        .attr("class", "minimap")
-                        .attr("d", nbhd_path)
-                        .attr("stroke", "white") 
-                        .attr("stroke-width", 0.5)
-                        .attr("fill", "lightgray");
+                    }
+                    else if (interaction==="hoveroff"){
+                        nbhd_map.selectAll("circle").data(nbhd_contents)
+                                .join("circle")
+                                // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
+                                .attr("r", 4)
+                                .attr("fill", "red")
+                                .attr("opacity", 0.7)
+                                .attr("cx", d => 
+                                    nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
+                                .attr("cy", d => 
+                                    nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [1] )
+                                .attr("pointer-events", "none");
+
+                    }
+                    else {
+                        nbhd_map.selectAll("circle").data(nbhd_contents)
+                                .join("circle")
+                                // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
+                                .attr("r", 4)
+                                .attr("fill", "black")
+                                .attr("opacity", 0.7)
+                                .attr("cx", d => 
+                                    nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
+                                .attr("cy", d => 
+                                    nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [1] )
+                                .attr("pointer-events", "none");
+                    }
+                    
 
                     // Plotting restaurants
-                    nbhd_map.selectAll("circle").data(nbhd_contents)
-                        .join("circle")
-                        // AKS : more detail here? Different colors for different cuisines, different sizes for ratings?
-                        .attr("r", 4)
-                        .attr("fill", "red")
-                        .attr("opacity", 0.7)
-                        .attr("cx", d => 
-                            nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [0] )
-                        .attr("cy", d => 
-                            nbhd_projection([d["loc_json"]["coordinate"]["longitude"] , d["loc_json"]["coordinate"]["latitude"]]) [1] )
-                        .attr("pointer-events", "none");
+                   
 
             }
 
